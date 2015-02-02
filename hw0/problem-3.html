@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Minimal D3 Example</title>
+<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+ 
+<style>
+.bar {
+  fill: steelblue;
+}
+ 
+.bar:hover {
+  fill: orange;
+}
+</style>
+</head>
+<body>
+<script type="text/javascript">
+ 
+var data = [150, 230, 180, 90]; 
+
+// This sets the width of each bar
+ 
+var svg = d3.select("body")
+            .append("svg")
+            .attr("width", 300)
+            .attr("height", 200);
+
+// This snippet renders the bar chart, dynamically
+ 
+svg.selectAll(".bar") // Selects the SVG, calls it ".bar"
+  .data(data)
+  .enter() // https://github.com/mbostock/d3/wiki/Selections#enter
+  .append("rect")
+  .attr({
+    class : "bar",
+    width : function(d) {return d;}, // This returns the data array
+    height: "40", // This sets the height of each bar
+    y : function(d, i) {return i*50 + 10;}, // This offsets everything in "y" position from 10, 60, 110, 160, etc.
+    x : "10"
+   });
+   
+// This snippet renders the same bar charts, but is written differently
+
+var bars = svg.selectAll(".bar");  // This is a different way of writing the "bars" variable as bars contains svg and selects data
+
+var bars_enter = bars.data(data).enter(); // bars_enter is a placeholder, defined in the update section (allows append, insert, select, call)
+
+var rects = bars_enter.append("rect") // Appends attributes from above var, svg to rects
+  .attr({
+    class : "bar",
+    width : function(d) {return d;},
+    height: "40",
+    y : function(d, i) {return i*50 + 10;},
+    x : "10"
+   });
+
+</script>	
+</body>
+</html>
