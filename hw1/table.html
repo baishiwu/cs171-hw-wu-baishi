@@ -51,8 +51,9 @@
 
         var columns = Object.keys(data_truncated[0]);
 
-        var sorted = 0;
         var prefix = d3.formatPrefix(1e9);
+        
+        var sortAsc = false;
 
         var table = d3.select("body").append("table"),
           thead = table.append("thead")
@@ -70,15 +71,17 @@
             return d; 
           })
           .on("click", function(header, i) {
-            tbody.selectAll("tr").sort(function(a, b) {
-              var sorted = d3.descending(a[header], b[header]);
-              console.log(sorted);
-              if (sorted === 0) {
-                return d3.ascending(a[header], b[header]);
-              } else { 
-                return sorted;
-              }
-            });
+            if (sortAsc) {
+              sortAsc = !sortAsc;
+              tbody.selectAll("tr").sort(function(a, b) {
+                return d3.descending(a[header], b[header]) || d3.ascending(a['name'], b['name']);
+              });
+            } else {
+              sortAsc = !sortAsc;
+              tbody.selectAll("tr").sort(function(a, b) {
+                return d3.ascending(a[header], b[header]) || d3.ascending(a['name'], b['name']);
+              });
+            };
           });
 
         var rows = tbody.selectAll("tr.row")
