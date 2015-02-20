@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta charset="utf-8">
+<head>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+  <style type="text/css">
+    rect {
+        fill:teal;
+        fill-opacity:.8;
+    }
+
+    input[type=range] {
+      width: 300px;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div>
+    Time: <input type="range" name="points" min="1995" max="2012" step="1" value="0" id="slider-time" oninput=";">
+  </div>
+
+  <div>
+    <form action ="">
+      Encode bars by: <input class="encode_button" type="radio" name="Encode" value="Population" checked="checked">Population
+      <input class="encode_button" type="radio" name="Encode" value="GDP" checked="checked">GDP
+    </form>
+  </div>
+
+  <div>
+    Filter by:
+    <label><input class="filter_button" type="checkbox" name="Americas" value="Americas" title="Americas" checked="checked"/>Americas</label>
+    <label><input class="filter_button" type="checkbox" name="Africa" value="Africa" title="Africa" checked="checked"/>Africa</label>
+    <label><input class="filter_button" type="checkbox" name="Asia" value="Asia" title="Asia" checked="checked"/>Asia</label>
+    <label><input class="filter_button" type="checkbox" name="Europe" value="Europe" title="Europe" checked="checked"/>Europe</label>
+    <label><input class="filter_button" type="checkbox" name="Oceania" value="Oceania" title="Oceania" checked="checked"/>Oceania</label>
+  </div>
+
+  <div>
+    <form action ="">
+      Aggregate by: <input type="radio" name="Aggregation" value="Continent" checked="checked">Continent
+      <input type="radio" name="Aggregation" value="Country" checked="checked">Country
+    </form>
+  </div>
+
+  <div>
+    <form action ="">
+      Sort by: <input class="sort_button" type="radio" name="Sort" value="Name" checked="checked">Name
+      <input class="sort_button" type="radio" name="Sort" value="Population" checked="checked">Population
+      <input class="sort_button" type="radio" name="Sort" value="GDP" checked="checked">GDP      
+    </form>
+  </div>
+
+
+  <script type="text/javascript">
+ 
+    var margin = {top: 50, bottom: 10, left:200, right: 40};
+    var width = 900 - margin.left - margin.right;
+    var height = 900 - margin.top - margin.bottom;
+ 
+    var xScale = d3.scale.linear().range([0, width]);
+    var yScale = d3.scale.ordinal().rangeRoundBands([0, height], .8, 0);
+ 
+    var svg = d3.select("body").append("svg")
+                .attr("width", width+margin.left+margin.right)
+                .attr("height", height+margin.top+margin.bottom);
+ 
+    var g = svg.append("g")
+                .attr("transform", "translate("+margin.left+","+margin.top+")");
+
+    var encode = 'gdp';
+ 
+    d3.json("data/countries_2012.json", function(data) {
+ 
+        var max = d3.max(data, function(d) { return d.gdp; } );
+        var min = 0;
+
+        xScale.domain([min, max]);
+        yScale.domain(data.map(function(d) { return d.name; }));
+ 
+        var rows = g.append("g")
+                    .selectAll("g.row")
+                    .data(data)
+                  .enter()
+                    .append("g")
+                    .attr("class", "row")
+ 
+        var bars = rows
+                    .append("rect")
+                    .attr("width", function(d) { return xScale(d.gdp); })
+                    .attr("height", 5)
+                    .attr("x", xScale(min))
+                    .attr("y", function(d) { return yScale(d.name); })
+                    
+                rows
+                    .append("text")
+                    .text(function(d) { return d.name })
+                    .attr("x", xScale(min) - 5)
+                    .attr("y", function(d) { return yScale(d.name); })
+                    .attr("dy", 5)
+                    .attr("font-family", "sans-serif")
+                    .attr("font-size", "7px")
+                    .attr("text-anchor", "end")
+
+        d3.selectAll(".encode_button").on("change", function() {
+            encode = d3.select(this).attr("value")
+            console.log(encode);
+        });
+
+
+        d3.selectAll(".sort_button").on("change", function() {
+            console.log(d3.select(this).attr("value"))
+            yScale.domain(data.sort(function(a, b) {
+                return d3.descending(a.name, b.name);
+            }));
+        });                    
+    });
+
+  </script>
+</body>
+</html>

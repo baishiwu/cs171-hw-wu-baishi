@@ -1,112 +1,233 @@
 <!DOCTYPE html>
 <html lang="en">
-<meta charset="utf-8">
-  <body>
-    <script src="http://d3js.org/d3.v3.min.js"></script>
-    <style>
-      
-      table {
-        border-spacing: 0px;
-      }
-      
-      td, th, caption {
-        padding: 1px 4px;
-        border: 1px solid #9e9e9e;
-      }
+<head>
+  <meta charset="utf-8">
+  <script src="http://d3js.org/d3.v3.min.js"></script>
+  <style>
+    
+    table {
+      border-spacing: 0px;
+    }
+    
+    td, th, caption {
+      padding: 1px 4px;
+      border: 1px solid #9e9e9e;
+    }
 
-      /* Added zebra pattern */
-      tbody tr:nth-child(2n) {
-        background-color: #d3d3d3; 
-      }
+    tbody tr:nth-child(2n) {
+      background-color: #d3d3d3; 
+    }
 
-      tbody tr:hover {
-        background-color: yellow;
-      }
+    tbody tr:hover {
+      background-color: yellow;
+    }
 
-      tbody td:nth-child(1), td:nth-child(2)  {
-        text-align: center;
-      }
-      
-      tbody td {
-        text-align: right;
-      }
-     
+    tbody td:nth-child(1), td:nth-child(2)  {
+      text-align: center;
+    }
+    
+    tbody td {
+      text-align: right;
+    }
+   
+    input[type=range] {
+      width: 300px;
+    }
+  </style>
+</head>
 
-    </style>
-    <script>
+<body>
 
-      d3.json("data/countries_2012.json", function(error, data){
+  <div>
+    Time Update: 1995 <input type="range" name="points" min="1995" max="2012" step="1" value="0" id="slider-time" oninput=";"> 2012
+  </div>
 
-        // Removing columns not displayed in the implementation
-        data_truncated = data.map(function(d) {
-          return {
-            name: d.name,
-            continent: d.continent,
-            gdp: d.gdp,
-            life_expectancy: d.life_expectancy,
-            population: d.population,
-            year: d.year
+  <div>
+    Filter by:
+    <label><input class="filter_button" type="checkbox" name="Americas" value="Americas" title="Americas" checked="checked"/>Americas</label>
+    <label><input class="filter_button" type="checkbox" name="Africa" value="Africa" title="Africa" checked="checked"/>Africa</label>
+    <label><input class="filter_button" type="checkbox" name="Asia" value="Asia" title="Asia" checked="checked"/>Asia</label>
+    <label><input class="filter_button" type="checkbox" name="Europe" value="Europe" title="Europe" checked="checked"/>Europe</label>
+    <label><input class="filter_button" type="checkbox" name="Oceania" value="Oceania" title="Oceania" checked="checked"/>Oceania</label>                  
+  </div>
+
+  <div>
+    <form action ="">
+      Aggregation: <input type="radio" name="Aggregation" value="None">None
+      <input type="radio" name="Aggregation" value="Continent">by Continent
+    </form>
+  </div>
+  
+  <script>
+
+  // Formatting & Sorting Variables
+  var prefix = d3.formatPrefix(1e9);  
+  var sortAsc = false;
+
+    d3.json("data/countries_2012.json", function(error, data){
+
+      data_truncated = data.map(function(d) {
+        return {
+          name: d.name,
+          continent: d.continent,
+          gdp: d.gdp,
+          life_expectancy: d.life_expectancy,
+          population: d.population,
+          year: d.year
+        };
+      });
+
+      var columns = Object.keys(data_truncated[0]);
+
+      var table = d3.select("body").append("table"),
+        thead = table.append("thead")
+                     .attr("class", "thead");
+        tbody = table.append("tbody");
+
+      table.append("caption")
+        .html("World Countries Ranking");
+
+      thead.append("tr").selectAll("th")
+        .data(columns)
+      .enter()
+        .append("th")
+        .text(function(d) {
+          return d; 
+        })
+        .on("click", function(header, i) {
+          if (sortAsc) {
+            sortAsc = !sortAsc;
+            tbody.selectAll("tr").sort(function(a, b) {
+              return d3.descending(a[header], b[header]) || d3.ascending(a['name'], b['name']);
+            });
+          } else {
+            sortAsc = !sortAsc;
+            tbody.selectAll("tr").sort(function(a, b) {
+              return d3.ascending(a[header], b[header]) || d3.ascending(a['name'], b['name']);
+            });
           };
         });
 
-        var columns = Object.keys(data_truncated[0]);
-
-        var prefix = d3.formatPrefix(1e9);
-        
-        var sortAsc = false;
-
-        var table = d3.select("body").append("table"),
-          thead = table.append("thead")
-                       .attr("class", "thead");
-          tbody = table.append("tbody");
-
-        table.append("caption")
-          .html("World Countries Ranking");
-
-        thead.append("tr").selectAll("th")
-          .data(columns)
+      var rows = tbody.selectAll("tr.row")
+        .data(data_truncated)
         .enter()
-          .append("th")
-          .text(function(d) {
-            return d; 
-          })
-          .on("click", function(header, i) {
-            if (sortAsc) {
-              sortAsc = !sortAsc;
-              tbody.selectAll("tr").sort(function(a, b) {
-                return d3.descending(a[header], b[header]) || d3.ascending(a['name'], b['name']);
-              });
-            } else {
-              sortAsc = !sortAsc;
-              tbody.selectAll("tr").sort(function(a, b) {
-                return d3.ascending(a[header], b[header]) || d3.ascending(a['name'], b['name']);
-              });
-            };
-          });
+        .append("tr").attr("class", "row")
 
-        var rows = tbody.selectAll("tr.row")
-          .data(data_truncated)
-          .enter()
-          .append("tr").attr("class", "row")
+      var cells = rows.selectAll("td")
+        .data(function(row) {
+            return d3.range(Object.keys(row).length).map(function(column, i) {
+                row.life_expectancy = d3.format(".1f")(row.life_expectancy);
+                return row[Object.keys(row)[i]];
+            });
+        })
+        .enter()
+        .append("td")
+        .text(function(d, i) {
+          if (i === 2) { 
+            d = d3.format(".1f")(prefix.scale(d)) + prefix.symbol;
+          } else if (i === 4) {
+            d = d3.format(",.0f")(d);
+          }
+          return d;
+        })
+    });
 
-        var cells = rows.selectAll("td")
-          .data(function(row) {
-              return d3.range(Object.keys(row).length).map(function(column, i) {
-                  row.life_expectancy = d3.format(".1f")(row.life_expectancy);
-                  return row[Object.keys(row)[i]];
-              });
-          })
-          .enter()
-          .append("td")
-          .text(function(d, i) {
-            if (i === 2) { 
-              d = d3.format(".1f")(prefix.scale(d)) + prefix.symbol;
-            } else if (i === 4) {
-              d = d3.format(",.0f")(d);
-            }
-            return d;
-          })
+
+
+  // Filters Variables
+  var originalData;
+  var filteredArray;
+  var continentFilters = {
+    "Americas" : false,
+    "Africa" : false,
+    "Asia" : false,
+    "Europe" : false,
+    "Oceania" : false,
+  };
+
+
+
+  function continentsFiltered() {
+    d3.selectAll("input").each(function(d) {
+      if(d3.select(this).attr("type") == "checkbox" && d3.select(this).property('checked')) {
+        continentFilters[d3.select(this).attr("name")] = true;
+      } else {
+        continentFilters[d3.select(this).attr("name")] = false;          
+      }
+    });
+  };
+
+    d3.json('data/countries_2012.json', function(data) {
+      originalData = data.map(function(d) {
+        return {
+          name: d.name,
+          continent: d.continent,
+          gdp: d.gdp,
+          life_expectancy: d.life_expectancy,
+          population: d.population,
+          year: d.year
+        };
       });
-    </script> 
-  </body>
+    })  
+
+    d3.selectAll(".filter_button").on("change", function() {
+
+      continentsFiltered();
+
+      trueContinents = Object.keys(continentFilters).filter(function(continent) { 
+        return continentFilters[continent]; })
+
+      if(d3.select(this).attr("type") == "checkbox" && d3.select(this).property('checked')) {
+        var filteredArray = originalData.filter(function(d){ 
+          return d.continent == trueContinents; 
+
+        });
+        update(filteredArray);
+
+      } else {
+        update(originalData);
+      }
+      
+    });
+    
+
+  function update(new_data) {
+
+    var rows = tbody.selectAll("tr.row")
+      .data(new_data)
+
+    rows.enter().append("tr").attr("class", "row")
+
+    rows_update = rows;
+    rows_update_cells = rows_update.selectAll("td")
+      .data(function(row) {
+          return d3.range(Object.keys(row).length).map(function(column, i) {
+            row.life_expectancy = d3.format(".1f")(row.life_expectancy);
+              return row[Object.keys(row)[i]];
+          });
+      })
+
+    rows_update_cells_enter = rows_update_cells.enter()
+      .append("td")
+    rows_update_cells_update = rows_update_cells
+      .text(function(d, i) {
+        if (i === 2) { 
+          d = d3.format(".1f")(prefix.scale(d)) + prefix.symbol;
+        } else if (i === 4) {
+          d = d3.format(",.0f")(d);
+        }
+        return d;
+      })
+
+    rows_update_cells_exit = rows_update_cells.exit()
+      .remove()
+
+    rows_exit = rows.exit()
+      .remove()
+
+  };
+
+
+  </script> 
+</body>
 </html>
