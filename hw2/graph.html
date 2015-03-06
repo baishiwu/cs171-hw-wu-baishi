@@ -6,59 +6,21 @@
   <style>
   </style>
 <body>
-
-  <form name="myform">
-    <div>
-    Layout: 
-      <select name="optone" onchange="setOptions(document.myform.optone.options[document.myform.optone.selectedIndex].value);">
-        <option value="" selected="selected"></option>
-        <option value="rankings">Rankings</option>
-        <option value="scatterplot">Scatterplot</option>
-      </select>
-    </div>
-    <div>
-      Variable: <select name ="opttwo">
-        <option value="" selected="selected">Select Layout First</option>
-      </select>
-    </div>
-  </form>
-  <div>
-    <form action ="">
-      Data Type: <input class="data_type" type="radio" name="Date" value="popord" checked="checked">Ordinal - Population
-      <input class="data_type" type="radio" name="Date" value="popquant" checked="checked">Quantitative - Population
-      <input class="data_type" type="radio" name="Date" value="gdpord" checked="checked">Ordinal - GDP
-      <input class="data_type" type="radio" name="Date" value="gdpquant" checked="checked">Quantitative - GDP
-      <input class="data_type" type="radio" name="Date" value="lifeord" checked="checked">Ordinal - Life Expectancy
-      <input class="data_type" type="radio" name="Date" value="lifequant" checked="checked">Quantitative - Life Expectancy      
-      <input class="data_type" type="radio" name="Date" value="geo" checked="checked">Scatterplot 1
-      <input class="data_type" type="radio" name="Date" value="popvsgdp" checked="checked">Scatterplot 2
-
-
-    </form>
-  </div>
-
+<div>
+  <select id="dropdown">
+    <option selected></option>
+    <option value="popord">Ordinal - Population</option>
+    <option value="popquant">Quantitative - Population</option>
+    <option value="gdpord">Ordinal - GDP</option>
+    <option value="gdpquant">Quantitative - GDP</option>
+    <option value="lifequant">Ordinal - Life Expectancy</option>
+    <option value="lifeord">Quantitative - Life Expectancy</option>    
+    <option value="popvsgdp">Population vs. GDP</option>
+    <option value="geo">Longitude vs. Latitude</option>
+  </select>
+</div>
 
   <script type="text/javascript">
-
-  // Dynamically Change Inputs
-
-    function setOptions(chosen) {
-      var selbox = document.myform.opttwo;
-       
-      selbox.options.length = 0;
-        if (chosen == "") {
-          selbox.options[selbox.options.length] = new Option('Select Layout First',' ');
-        }
-        if (chosen == "rankings") {
-          selbox.options[selbox.options.length] = new Option('Population');
-          selbox.options[selbox.options.length] = new Option('GDP');
-          selbox.options[selbox.options.length] = new Option('Life Expectancy');
-        }
-        if (chosen == "scatterplot") {
-          selbox.options[selbox.options.length] = new Option('Population vs. GDP');
-          selbox.options[selbox.options.length] = new Option('Longitude vs. Latitude');
-        }
-      }
  
   // Rankings
 
@@ -255,14 +217,31 @@ function variable_selector_scatterplot_pop () {
     .attr("y", function(d) { return yScale(d.gdp); })
 }
 
-d3.select("input[value=popord]").on("click", pop_ordinal);
-d3.select("input[value=popquant]").on("click", pop_quantitative);
-d3.select("input[value=gdpord]").on("click", gdp_ordinal);
-d3.select("input[value=gdpquant]").on("click", gdp_quantitative);
-d3.select("input[value=lifeord]").on("click", life_ordinal);
-d3.select("input[value=lifequant]").on("click", life_quantitative);
-d3.select("input[value=popvsgdp]").on("click", variable_selector_scatterplot_pop);
-d3.select("input[value=geo]").on("click", variable_selector_scatterplot_geo);
-
+d3.select("#dropdown").on("change", function() { 
+  if (d3.select("#dropdown").property("value") == "popord") {
+    pop_ordinal();
+  }
+  else if (d3.select("#dropdown").property("value") == "popquant") {
+    pop_quantitative();
+  }
+  else if (d3.select("#dropdown").property("value") == "gdpord") {
+    gdp_ordinal();
+  }
+  else if (d3.select("#dropdown").property("value") == "gdpquant") {
+    gdp_quantitative();
+  }
+  else if (d3.select("#dropdown").property("value") == "lifeord") {
+    life_ordinal();
+  }
+  else if (d3.select("#dropdown").property("value") == "lifequant") {
+    life_quantitative();
+  }
+  else if (d3.select("#dropdown").property("value") == "popvsgdp") {
+    variable_selector_scatterplot_pop();
+  }
+  else if (d3.select("#dropdown").property("value") == "geo") {
+    variable_selector_scatterplot_geo();
+  }
+})
   </script>
 </body>

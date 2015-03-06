@@ -27,6 +27,15 @@ var angle = d3.scale.ordinal().domain(d3.range(4)).rangePoints([0, 2 * Math.PI])
     radius = d3.scale.linear().range([innerRadius, outerRadius]),
     color = d3.scale.category10().domain(d3.range(20));
 
+d3.json("data/countries_2012.json", function(data) {
+
+  var node = svg.selectAll(".node")
+      .data(data)
+      .enter()
+      .append("g")
+      .attr("class","node");
+  });
+
 var nodes = [
   {x: 0, y: .1},
   {x: 0, y: .9},
