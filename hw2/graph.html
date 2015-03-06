@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <script src="http://d3js.org/d3.v3.min.js"></script>
+  <script src="d3.v3.js"></script>
   <style>
   </style>
 <body>
@@ -24,8 +24,16 @@
   </form>
   <div>
     <form action ="">
-      Data Type: <input class="data_type" type="radio" name="Date" value="Ordinal" checked="checked">Ordinal
-      <input class="data_type" type="radio" name="Date" value="Quantitative" checked="checked">Quantitative
+      Data Type: <input class="data_type" type="radio" name="Date" value="popord" checked="checked">Ordinal - Population
+      <input class="data_type" type="radio" name="Date" value="popquant" checked="checked">Quantitative - Population
+      <input class="data_type" type="radio" name="Date" value="gdpord" checked="checked">Ordinal - GDP
+      <input class="data_type" type="radio" name="Date" value="gdpquant" checked="checked">Quantitative - GDP
+      <input class="data_type" type="radio" name="Date" value="lifeord" checked="checked">Ordinal - Life Expectancy
+      <input class="data_type" type="radio" name="Date" value="lifequant" checked="checked">Quantitative - Life Expectancy      
+      <input class="data_type" type="radio" name="Date" value="geo" checked="checked">Scatterplot 1
+      <input class="data_type" type="radio" name="Date" value="popvsgdp" checked="checked">Scatterplot 2
+
+
     </form>
   </div>
 
@@ -66,8 +74,8 @@
   
     d3.json("data/countries_2012.json", function(data) {
 
-        data.sort(function(a,b) { return b.population - a.population; })
- 
+        all_data = data;
+
         var xScale = d3.scale.linear()
 
         var yScale = d3.scale.linear()
@@ -75,7 +83,7 @@
           .range([height - padding, padding]);
 
         svg.selectAll("circle")
-          .data(data)
+          .data(all_data)
           .enter()
           .append("circle")
           .attr("cx", 5)      
@@ -83,7 +91,7 @@
           .attr("r", 5 );
     
         svg.selectAll("text")
-          .data(data)
+          .data(all_data)
           .enter()
           .append("text")
           .text(function(d) { return d.name; })
@@ -95,125 +103,166 @@
 
   // Change Actions
 
-function ordinal_scale () {
+function pop_ordinal () {
 
-    d3.json("data/countries_2012.json", function(data) {
+  all_data.sort(function(a,b) { return b.population - a.population; })
 
-        var yScale = d3.scale.ordinal()
-          .domain(data.map(function(d) { return d.name; }))
+  var yScale = d3.scale.ordinal()
+    .domain(all_data.map(function(d) { return d.name; }))
+    .range([height - padding, padding]);          
 
-        svg.selectAll("circle")
-          .transition().duration(500)
-          .attr("cy", function(d, i) { return i * 12 + padding / 2; })      
-        
-        svg.selectAll("text")
-          .transition().duration(500)        
-          .attr("y", function(d, i) { return i * 12 + padding / 2; })
-    })
+  svg.selectAll("circle")
+    .transition().duration(500)
+    .attr("cx", 5)      
+    .attr("cy", function(d, i) { return i * 12 + padding / 2; })      
+  
+  svg.selectAll("text")
+    .transition().duration(500)
+    .attr("x", 15)
+    .attr("y", function(d, i) { return i * 12 + padding / 2; })
   }
 
-function quantitative_scale () {
+function pop_quantitative () {
 
-    d3.json("data/countries_2012.json", function(data) {
+  var yScale = d3.scale.linear()
+    .domain([-90, d3.max(all_data, function(d) { return d.population; })])
+    .range([height - padding, padding]);          
 
-        var yScale = d3.scale.linear()
-          .domain([-90, d3.max(data, function(d) { return d.population; })])
-
-        svg.selectAll("circle")
-          .transition().duration(500)        
-          .attr("cy", function(d) { return yScale(d.population); })      
-        
-        svg.selectAll("text")
-          .transition().duration(500)        
-          .attr("y", function(d) { return yScale(d.population * .995); })
-    })
+  svg.selectAll("circle")
+    .transition().duration(500)
+    .attr("cx", 5)                  
+    .attr("cy", function(d) { return yScale(d.population); })      
+  
+  svg.selectAll("text")
+    .transition().duration(500)        
+    .attr("x", 15)
+    .attr("y", function(d) { return yScale(d.population * .995); })
   }
 
-function gdp_input () {
-    d3.json("data/countries_2012.json", function(data) {
+function gdp_ordinal () {
 
-        data.sort(function(a,b) { return b.gdp - a.gdp; })  
-        var yScale = d3.scale.linear()
-          .domain([-90, d3.max(data, function(d) { return d.gdp; })])
+  all_data.sort(function(a,b) { return b.gdp - a.gdp; })  
+  var yScale = d3.scale.ordinal()
+    .domain(all_data.map(function(d) { return d.name; }))
+    .range([height - padding, padding]);          
 
-        svg.selectAll("circle")
-          .attr("cy", function(d) { return yScale(d.gdp); })      
+  svg.selectAll("circle")
+    .transition().duration(500)
+    .attr("cx", 5)          
+    .attr("cy", function(d, i) { return i * 12 + padding / 2; })      
+  
+  svg.selectAll("text")
+    .transition().duration(500)        
+    .attr("x", 15)    
+    .attr("y", function(d, i) { return i * 12 + padding / 2; })
 
-        svg.selectAll("text")
-          .attr("y", function(d) { return yScale(d.gdp * .995); })
-
-    })
   }
 
-function variable_selector_rankings () {
-        data.sort(function(a,b) { return b.gdp - a.gdp; })  
-        var yScale = d3.scale.linear()
-          .domain([-90, d3.max(data, function(d) { return d.gdp; })])
+function gdp_quantitative () {
 
-        svg.selectAll("circle")
-          .attr("cy", function(d) { return yScale(d.gdp); })      
+  var yScale = d3.scale.linear()
+    .domain([-90, d3.max(all_data, function(d) { return d.gdp; })])
+    .range([height - padding, padding]);                    
 
-        svg.selectAll("text")
-          .attr("y", function(d) { return yScale(d.gdp * .995); })
-}
+  svg.selectAll("circle")
+    .transition().duration(500)                
+    .attr("cx", 5)      
+    .attr("cy", function(d) { return yScale(d.gdp); })      
+
+  svg.selectAll("text")
+    .transition().duration(500)                
+    .attr("x", 15)    
+    .attr("y", function(d) { return yScale(d.gdp * .995); })
+
+  }
+
+function life_ordinal () {
+
+  all_data.sort(function(a,b) { return b.life_expectancy - a.life_expectancy; })  
+  var yScale = d3.scale.ordinal()
+    .domain(all_data.map(function(d) { return d.name; }))
+    .range([height - padding, padding]);          
+
+  svg.selectAll("circle")
+    .transition().duration(500)                
+    .attr("cx", 5)      
+    .attr("cy", function(d, i) { return i * 12 + padding / 2; })      
+
+  svg.selectAll("text")
+    .transition().duration(500)                
+    .attr("x", 15)    
+    .attr("y", function(d, i) { return i * 12 + padding / 2; })
+
+  }
+
+function life_quantitative () {
+
+  var yScale = d3.scale.linear()
+    .domain([-90, d3.max(all_data, function(d) { return d.life_expectancy; })])
+    .range([height - padding, padding]);                    
+
+  svg.selectAll("circle")
+    .transition().duration(500)                
+    .attr("cx", 5)
+    .attr("cy", function(d) { return yScale(d.life_expectancy); })      
+
+  svg.selectAll("text")
+    .transition().duration(500)                
+    .attr("x", 15)
+    .attr("y", function(d) { return yScale(d.life_expectancy * .995); })
+
+  }
 
 function variable_selector_scatterplot_geo () {
-
-    d3.json("data/countries_2012.json", function(data) {
   
-        var xScale = d3.scale.linear()
-          .domain([-90, d3.max(data, function(d) { return d.longitude; })])
-          .range([padding, width - padding * 2]);
+  var xScale = d3.scale.linear()
+    .domain([-90, d3.max(all_data, function(d) { return d.longitude; })])
+    .range([padding, width - padding * 2]);
 
-        var yScale = d3.scale.linear()
-          .domain([-90, d3.max(data, function(d) { return d.latitude; })])
-          .range([height - padding, padding]);
+  var yScale = d3.scale.linear()
+    .domain([-90, d3.max(all_data, function(d) { return d.latitude; })])
+    .range([height - padding, padding]);
 
-        svg.selectAll("circle")
-          .transition().duration(500)                
-          .attr("cx", function(d) { return xScale(d.longitude); })      
-          .attr("cy", function(d) { return yScale(d.latitude); })      
+  svg.selectAll("circle")
+    .transition().duration(500)                
+    .attr("cx", function(d) { return xScale(d.longitude); })      
+    .attr("cy", function(d) { return yScale(d.latitude); })      
 
-        svg.selectAll("text")
-          .transition().duration(500)                
-          .attr("x", function(d) { return xScale(d.longitude); })
-          .attr("y", function(d) { return yScale(d.latitude); })
-    })
+  svg.selectAll("text")
+    .transition().duration(500)                
+    .attr("x", function(d) { return xScale(d.longitude); })
+    .attr("y", function(d) { return yScale(d.latitude); })
 }
 
 function variable_selector_scatterplot_pop () {
-
-    d3.json("data/countries_2012.json", function(data) {
   
-        var xScale = d3.scale.linear()
-          .domain([-90, d3.max(data, function(d) { return d.population; })])
-          .range([padding, width - padding * 2]);
+  var xScale = d3.scale.linear()
+    .domain([-90, d3.max(all_data, function(d) { return d.population; })])
+    .range([padding, width - padding * 2]);
 
-        var yScale = d3.scale.linear()
-          .domain([-90, d3.max(data, function(d) { return d.gdp; })])
-          .range([height - padding, padding]);
+  var yScale = d3.scale.linear()
+    .domain([-90, d3.max(all_data, function(d) { return d.gdp; })])
+    .range([height - padding, padding]);
 
-        svg.selectAll("circle")
-          .transition().duration(500)                
-          .attr("cx", function(d) { return xScale(d.population); })      
-          .attr("cy", function(d) { return yScale(d.gdp); })      
+  svg.selectAll("circle")
+    .transition().duration(500)                
+    .attr("cx", function(d) { return xScale(d.population); })      
+    .attr("cy", function(d) { return yScale(d.gdp); })      
 
-        svg.selectAll("text")
-          .transition().duration(500)                
-          .attr("x", function(d) { return xScale(d.population); })
-          .attr("y", function(d) { return yScale(d.gdp); })
-    })
+  svg.selectAll("text")
+    .transition().duration(500)                
+    .attr("x", function(d) { return xScale(d.population); })
+    .attr("y", function(d) { return yScale(d.gdp); })
 }
 
-d3.select("input[value=Ordinal]").on("click", variable_selector_scatterplot_geo);
-d3.select("input[value=Quantitative]").on("click", variable_selector_scatterplot_pop);
-d3.select("option[value=rankings]").on("change", quantitative_scale);
-d3.select("option[value=scatterplot]").on("change", quantitative_scale);
-d3.select("option[value=population]").on("change", quantitative_scale);
-d3.select("option[value=gdp]").on("change", quantitative_scale);
-d3.select("option[value=life]").on("change", quantitative_scale);
-d3.select("option[value=popvsgdp]").on("change", quantitative_scale);
-d3.select("option[value=geo]").on("change", quantitative_scale);
+d3.select("input[value=popord]").on("click", pop_ordinal);
+d3.select("input[value=popquant]").on("click", pop_quantitative);
+d3.select("input[value=gdpord]").on("click", gdp_ordinal);
+d3.select("input[value=gdpquant]").on("click", gdp_quantitative);
+d3.select("input[value=lifeord]").on("click", life_ordinal);
+d3.select("input[value=lifequant]").on("click", life_quantitative);
+d3.select("input[value=popvsgdp]").on("click", variable_selector_scatterplot_pop);
+d3.select("input[value=geo]").on("click", variable_selector_scatterplot_geo);
 
   </script>
 </body>

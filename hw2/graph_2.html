@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="d3.v3.js"></script>
   <style type="text/css">
     body {
       width: 800px;
@@ -20,6 +20,11 @@
   </style>
 </head>
 <body>
+  <form>
+  Layout:
+    <label><input type="radio" name="layout" value="force" checked> Force</label>
+    <label><input type="radio" name="layout" value="circular"> Circular</label>  
+  </form>
   <script type="text/javascript">
 
   var margin = {top: 40, bottom: 10, left: 20, right: 20};
@@ -37,56 +42,105 @@
       .charge(-75)
       .size([width, height]);
 
-  var color = d3.scale.category10();
+  var graph = {nodes: [], links: []};
+
+  var node = svg.selectAll(".node")
+              .data(graph.nodes)
+
 
   d3.json("data/countries_2012.json", function(data) {
 
-    var link = svg.selectAll(".link")
-        .data([])
+//    var link = svg.selectAll(".link")
+//        .data([])
 
-    link
-      .enter().append("line");
+//    link
+//      .enter().append("line");
 
-    link
-      .attr("class", "link")
+//    link
+//      .attr("class", "link")
 
-    link
-      .exit()
-      .remove();
+//    link
+//      .exit()
+//      .remove();
 
-    // Nodes data
+    graph.nodes = data;
+
     var node = svg.selectAll(".node")
-        .data(data);
+        .data(graph.nodes)
+        .enter()
+        .append("g")
+        .attr("class","node");
 
     node
-      .enter().append("circle");
-
-    node
-        .attr("class", "node")
-        .style("fill", function(d) { return color(d.group); })
-        .attr("r", 10)
+        .append("circle")
+        .attr("r", 5)
         .call(force.drag);
 
     node
-      .exit()
-      .remove();
+        .append("text") 
+        .text(function(d) { return d.name; });
 
     force
-        .nodes(data)
+        .nodes(graph.nodes)
         .links([])
         .start();
 
-    node
-    	.append("name")
-    	.text(function(d) { return d.name; });
-
-    force.on("tick", function(e) {
+    force.on("tick", function(e) 
+    {
       node.attr("cx", function(d) { return d.x; })
           .attr("cy", function(d) { return d.y; });
+
+      node.transition().duration(100)
+      .attr("transform", function(d) { 
+        return "translate("+d.x+","+d.y+")"; 
+      });
+
+    //graph_update();
+
     });
 
-
   });
+
+function circular_layout() {
+
+  force.stop();
+
+  var r = Math.min(height, width);
+
+  var arc = d3.svg.arc()
+          .outerRadius(r);
+
+  var pie = d3.layout.pie()
+          .sort(function(a, b) { return a.population - b.population;})
+          .value(function(d, i) { 
+            return 1;
+          });
+
+  graph.nodes = pie(graph.nodes).map(function(d, i) {
+    
+    d.innerRadius = 0;
+    d.outerRadius = r;
+    
+    d.data.x = arc.centroid(d)[0]+width/2;
+    d.data.y = arc.centroid(d)[1]+height/2;
+
+    return d.data;
+  })
+
+  var node = svg.selectAll(".node")
+      .data(graph.nodes)
+
+  node.transition().duration(500)
+      .attr("transform", function(d) { 
+        return "translate("+d.x+","+d.y+")"; 
+      });
+}
+
+d3.select("input[value=\"circular\"]").on("click", circular_layout);
+
+// var link = svg.selectAll(".link")
+//              .data(graph.links);
+
 
   </script>
 </body>
