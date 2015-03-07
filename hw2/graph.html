@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <script src="d3.v3.js"></script>
+  <script src="http://d3js.org/d3.v3.min.js"></script>
   <style>
   </style>
 <body>
@@ -13,8 +13,8 @@
     <option value="popquant">Quantitative - Population</option>
     <option value="gdpord">Ordinal - GDP</option>
     <option value="gdpquant">Quantitative - GDP</option>
-    <option value="lifequant">Ordinal - Life Expectancy</option>
-    <option value="lifeord">Quantitative - Life Expectancy</option>    
+    <option value="lifeord">Ordinal - Life Expectancy</option>
+    <option value="lifequant">Quantitative - Life Expectancy</option>    
     <option value="popvsgdp">Population vs. GDP</option>
     <option value="geo">Longitude vs. Latitude</option>
   </select>
@@ -36,7 +36,7 @@
   
     d3.json("data/countries_2012.json", function(data) {
 
-        all_data = data;
+        all_data = data.sort(function(a,b) { return b.population - a.population; });
 
         var xScale = d3.scale.linear()
 
@@ -67,12 +67,6 @@
 
 function pop_ordinal () {
 
-  all_data.sort(function(a,b) { return b.population - a.population; })
-
-  var yScale = d3.scale.ordinal()
-    .domain(all_data.map(function(d) { return d.name; }))
-    .range([height - padding, padding]);          
-
   svg.selectAll("circle")
     .transition().duration(500)
     .attr("cx", 5)      
@@ -102,11 +96,6 @@ function pop_quantitative () {
   }
 
 function gdp_ordinal () {
-
-  all_data.sort(function(a,b) { return b.gdp - a.gdp; })  
-  var yScale = d3.scale.ordinal()
-    .domain(all_data.map(function(d) { return d.name; }))
-    .range([height - padding, padding]);          
 
   svg.selectAll("circle")
     .transition().duration(500)
@@ -139,11 +128,6 @@ function gdp_quantitative () {
   }
 
 function life_ordinal () {
-
-  all_data.sort(function(a,b) { return b.life_expectancy - a.life_expectancy; })  
-  var yScale = d3.scale.ordinal()
-    .domain(all_data.map(function(d) { return d.name; }))
-    .range([height - padding, padding]);          
 
   svg.selectAll("circle")
     .transition().duration(500)                
