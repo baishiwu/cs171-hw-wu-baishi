@@ -36,7 +36,7 @@
   
     d3.json("data/countries_2012.json", function(data) {
 
-        all_data = data.sort(function(a,b) { return b.population - a.population; });
+        all_data = data;
 
         var xScale = d3.scale.linear()
 
@@ -45,7 +45,7 @@
           .range([height - padding, padding]);
 
         svg.selectAll("circle")
-          .data(all_data)
+          .data(all_data, function(d) { return d.alpha2_code })
           .enter()
           .append("circle")
           .attr("cx", 5)      
@@ -53,7 +53,7 @@
           .attr("r", 5 );
     
         svg.selectAll("text")
-          .data(all_data)
+          .data(all_data, function(d) { return d.alpha2_code })
           .enter()
           .append("text")
           .text(function(d) { return d.name; })
@@ -67,15 +67,20 @@
 
 function pop_ordinal () {
 
+  all_data.sort(function(a,b) {return b.population - a.population})
+
   svg.selectAll("circle")
+    .data(all_data, function(d) { return d.alpha2_code })
     .transition().duration(500)
     .attr("cx", 5)      
     .attr("cy", function(d, i) { return i * 12 + padding / 2; })      
   
   svg.selectAll("text")
+    .data(all_data, function(d) { return d.alpha2_code })
     .transition().duration(500)
     .attr("x", 15)
     .attr("y", function(d, i) { return i * 12 + padding / 2; })
+    
   }
 
 function pop_quantitative () {
@@ -93,16 +98,21 @@ function pop_quantitative () {
     .transition().duration(500)        
     .attr("x", 15)
     .attr("y", function(d) { return yScale(d.population * .995); })
+
   }
 
 function gdp_ordinal () {
 
+  all_data.sort(function(a,b) {return b.gdp - a.gdp})
+
   svg.selectAll("circle")
+    .data(all_data, function(d) { return d.alpha2_code })  
     .transition().duration(500)
     .attr("cx", 5)          
     .attr("cy", function(d, i) { return i * 12 + padding / 2; })      
   
   svg.selectAll("text")
+    .data(all_data, function(d) { return d.alpha2_code })  
     .transition().duration(500)        
     .attr("x", 15)    
     .attr("y", function(d, i) { return i * 12 + padding / 2; })
@@ -129,12 +139,16 @@ function gdp_quantitative () {
 
 function life_ordinal () {
 
+  all_data.sort(function(a,b) {return b.life_expectancy - a.life_expectancy})
+
   svg.selectAll("circle")
+    .data(all_data, function(d) { return d.alpha2_code })    
     .transition().duration(500)                
     .attr("cx", 5)      
     .attr("cy", function(d, i) { return i * 12 + padding / 2; })      
 
   svg.selectAll("text")
+    .data(all_data, function(d) { return d.alpha2_code })    
     .transition().duration(500)                
     .attr("x", 15)    
     .attr("y", function(d, i) { return i * 12 + padding / 2; })
@@ -178,6 +192,7 @@ function variable_selector_scatterplot_geo () {
     .transition().duration(500)                
     .attr("x", function(d) { return xScale(d.longitude); })
     .attr("y", function(d) { return yScale(d.latitude); })
+
 }
 
 function variable_selector_scatterplot_pop () {
@@ -199,6 +214,7 @@ function variable_selector_scatterplot_pop () {
     .transition().duration(500)                
     .attr("x", function(d) { return xScale(d.population); })
     .attr("y", function(d) { return yScale(d.gdp); })
+
 }
 
 d3.select("#dropdown").on("change", function() { 
@@ -227,5 +243,6 @@ d3.select("#dropdown").on("change", function() {
     variable_selector_scatterplot_geo();
   }
 })
+
   </script>
 </body>
