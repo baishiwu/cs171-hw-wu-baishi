@@ -10,14 +10,52 @@
       font-size: 10px;
       font-family: "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
     }
+
+    .node {
+      fill: #777;
+    }
+
+    .node:hover {
+      fill: #000
+    }
+
+    .node--source,
+    .node--target {
+      font-weight: 700;
+    }
+
+    .node--source {
+      fill: #eee;
+    }
+
+    .node--target {
+      fill: #000;
+    }
+
+    .link {
+      stroke: #ccc;
+      stroke-opacity: .6;
+    }
+
+    .link--source,
+    .link--target {
+      stroke-opacity: 1;
+      stroke-width: 2px;
+    }
+
+    .link--source {
+      stroke: #000;
+    }
+
+    .link--target {
+      stroke: #000;
+    }
+
     circle {
       stroke: #fff;
       stroke-width: 1;
     }
-    .link {
-      stroke: #999;
-      stroke-opacity: .6;
-    }
+
   </style>
 </head>
 <body>
@@ -27,8 +65,8 @@
     <label><input type="radio" name="layout" value="circular"> Circular</label>  
     <label><input type="radio" name="layout" value="continents-linear"> Continents Linear</label> 
     <label><input type="radio" name="layout" value="continents-circular"> Continents Circular</label>      
-
   </form>
+
   <script type="text/javascript">
 
   var margin = {top: 40, bottom: 10, left: 20, right: 20};
@@ -41,7 +79,6 @@
             .append("g")
               .attr("transform", "translate("+margin.left+","+margin.top+")");
 
-
   var force = d3.layout.force()
       .charge(-75)
       .size([width, height]);
@@ -51,9 +88,10 @@
   var node = svg.selectAll(".node")
               .data(graph.nodes)
 
-  d3.json("data/countries_1995_2012.json", function(data) {
+  var link = svg.selectAll(".link")
+              .data(graph.links)
 
-    var linkArray = [];
+  d3.json("data/countries_1995_2012.json", function(data) {
 
     data.forEach(function(d, i) {
 
@@ -61,25 +99,22 @@
       var targetCountryId;
 
       d.years[17].top_partners.forEach(function(e, j) {
-        if (d.country_id == data[j].country_id) {
-          sourceCountryId = data[j];
-        };
+        sourceCountryId = data[i];
+
         for (var n = data.length - 1; n >= 0; n--) {
           if (e.country_id == data[n].country_id) {
             targetCountryId = data[n];
           }
         };
 
-        linkArray.push({"source": sourceCountryId, "target": targetCountryId})        
+        graph.links.push({"source": sourceCountryId, "target": targetCountryId})        
       });
     });
-
-    console.log(linkArray);
 
     graph.nodes = data;
 
     var link = svg.selectAll(".link")
-        .data(linkArray)
+        .data(graph.links)
 
     link
       .enter().append("line");
@@ -104,11 +139,11 @@
 
     node
         .append("text") 
-        .text(function(d) { return d.name; });
+        .text(function(d) { return d.name; })
 
     force
         .nodes(graph.nodes)
-        .links(linkArray)
+        .links(graph.links)
         .start();
 
     force.on("tick", function(e) {
@@ -119,12 +154,14 @@
           d.x += (width/2 - d.x) * k;
       });
 
-      var node = svg.selectAll(".node")
-        .data(graph.nodes)
-
       node
         .attr("cx", function(d) { return d.x; })
         .attr("cy", function(d) { return d.y; }); 
+
+      link.attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
 
       node.transition().duration(100)
       .attr("transform", function(d) { 
@@ -153,6 +190,15 @@ function force_layout() {
     node
       .attr("cx", function(d) { return d.x; })
       .attr("cy", function(d) { return d.y; });
+
+    var link = svg.selectAll(".link")
+        .data(graph.links)
+
+    link
+      .attr("x1", function(d) { return d.source.x; })
+      .attr("y1", function(d) { return d.source.y; })
+      .attr("x2", function(d) { return d.target.x; })
+      .attr("y2", function(d) { return d.target.y; });
 
     node.transition().duration(100)
     .attr("transform", function(d) { 
@@ -188,14 +234,27 @@ function circular_layout() {
     return d.data;
   })
 
-
   var node = svg.selectAll(".node")
       .data(graph.nodes)
+
+  node
+      .on("mouseover", mouseovered)
+      .on("mouseout", mouseouted);
 
   node.transition().duration(500)
       .attr("transform", function(d) { 
         return "translate("+d.x+","+d.y+")"; 
       });
+
+  var link = svg.selectAll(".link")
+      .data(graph.links)
+
+  link
+    .transition().duration(500)
+    .attr("x1", function(d) { return d.source.x; })
+    .attr("y1", function(d) { return d.source.y; })
+    .attr("x2", function(d) { return d.target.x; })
+    .attr("y2", function(d) { return d.target.y; });
 }
 
 function continents_linear_force() {
@@ -287,6 +346,41 @@ d3.select("input[value=\"force\"]").on("click", force_layout);
 d3.select("input[value=\"circular\"]").on("click", circular_layout);
 d3.select("input[value=\"continents-linear\"]").on("click", continents_linear_force);
 d3.select("input[value=\"continents-circular\"]").on("click", continents_circular_force);
+
+
+function mouseovered(d) {
+
+  var link = svg.selectAll(".link")
+      .data(graph.links)
+
+  link
+      .classed("link--target", function(l) { if (l.target === d) return l.source.source = true; })
+      .classed("link--source", function(l) { if (l.source === d) return l.target.target = true; })      
+
+  var node = svg.selectAll(".node")
+      .data(graph.nodes)
+
+  node
+      .classed("node--target", function(n) { if (d.country_id === n.years[17].top_partners[0].country_id) return true })
+      .classed("node--source", true);
+}
+
+function mouseouted() {
+
+  var link = svg.selectAll(".link")
+      .data(graph.links)
+
+  link
+      .classed("link--target", false)
+      .classed("link--source", false);
+
+  var node = svg.selectAll(".node")
+      .data(graph.nodes)
+
+  node
+      .classed("node--target", false)
+      .classed("node--source", false);
+}
 
   </script>
 </body>

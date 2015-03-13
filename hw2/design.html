@@ -46,9 +46,40 @@
               .data(graph.nodes)
 
 
-  d3.json("data/countries_2012.json", function(data) {
+  d3.json("data/countries_1995_2012.json", function(data) {
+
+    data.forEach(function(d, i) {
+
+      var sourceCountryId;
+      var targetCountryId;
+
+      d.years[17].top_partners.forEach(function(e, j) {
+        sourceCountryId = data[i];
+
+        for (var n = data.length - 1; n >= 0; n--) {
+          if (e.country_id == data[n].country_id) {
+            targetCountryId = data[n];
+          }
+        };
+
+        graph.links.push({"source": sourceCountryId, "target": targetCountryId})        
+      });
+    });
 
     graph.nodes = data;
+
+    var link = svg.selectAll(".link")
+        .data(graph.links)
+
+    link
+      .enter().append("line");
+
+    link
+      .attr("class", "link")
+
+    link
+      .exit()
+      .remove();
 
     var node = svg.selectAll(".node")
         .data(graph.nodes)
@@ -58,7 +89,7 @@
 
     node
         .append("circle")
-        .attr("r", function(d) { return Math.sqrt(d.population) / 500; })
+        .attr("r", function(d) { return Math.sqrt(d.years[17].population) / 500 })
         .attr("opacity", 0.5)
         .style("fill", function(d) { return color(d.continent);})
         .call(force.drag);
@@ -69,30 +100,33 @@
 
     force
         .nodes(graph.nodes)
-        .links([])
+        .links(graph.links)
         .start();
 
-    force.on("tick", function(e) 
-    {
+    force.on("tick", function(e) {
 
       graph.nodes.forEach(function(d, i) {
-        d.x = d.longitude * 2 + 300;
-        d.y = - d.latitude * 3 + 200;
-      })
+        d.x = (d.longitude) * 2 + 300;
+        d.y = - (d.latitude) * 3 + 200;
 
       node
           .attr("cx", function(d) { return d.x; })
           .attr("cy", function(d) { return d.y; });
 
-      node.transition().duration(150)
-      .attr("transform", function(d) { 
+      link
+        .attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+
+      node.attr("transform", function(d) { 
         return "translate("+d.x+","+d.y+")"; 
       });
 
     });
 
+    });
   });
-
   </script>
 </body>
 </html>
