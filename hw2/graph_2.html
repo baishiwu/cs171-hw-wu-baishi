@@ -26,8 +26,8 @@
     <label><input type="radio" name="layout" value="force" checked> Force</label>
     <label><input type="radio" name="layout" value="circular"> Circular</label>  
     <label><input type="radio" name="layout" value="continents-linear"> Continents Linear</label> 
-    <label><input type="radio" name="layout" value="continents-circular"> Continents Circular</label>      
-
+    <label><input type="radio" name="layout" value="continents-circular"> Continents Circular</label> 
+    <label><input type="radio" name="layout" value="circles-on-circles"> Circles on Circles</label>     
   </form>
   <script type="text/javascript">
 
@@ -227,20 +227,20 @@ function continents_circular_force() {
     graph.nodes.forEach(function(d, i) {
 
       if (d.continent == "Africa") {
-        d.y += (50 - d.y) * k;
-        d.x += (400 - d.x) * k;
+        d.y += (100 - d.y) * k;
+        d.x += (500 - d.x) * k;
       } else if (d.continent == "Americas") {
         d.y += (400 - d.y) * k;
         d.x += (400 - d.x) * k;
       } else if (d.continent == "Asia") {
         d.y += (300 - d.y) * k;
-        d.x += (700 - d.x) * k;
+        d.x += (600 - d.x) * k;
       } else if (d.continent == "Europe") {
         d.y += (300 - d.y) * k;
-        d.x += (100 - d.x) * k;
+        d.x += (200 - d.x) * k;
       } else if (d.continent == "Oceania") {
         d.y += (100 - d.y) * k;
-        d.x += (100 - d.x) * k;
+        d.x += (250 - d.x) * k;
       }
     });
     
@@ -260,10 +260,107 @@ function continents_circular_force() {
 
 }
 
+var africa_nodes = [];
+var americas_nodes = [];
+var asia_nodes = [];
+var europe_nodes = [];
+var oceania_nodes = [];
+
+function circles_on_circles() {
+
+  force.stop();
+
+  var r = 150;
+
+  var arc = d3.svg.arc()
+          .outerRadius(r);
+
+  var pie = d3.layout.pie()
+          .sort(function(a, b) { return a.population - b.population;})
+          .value(function(d, i) { 
+            return 1;
+          });
+
+  graph.nodes.forEach(function(d, i) {
+
+    if (d.continent == "Africa") {
+      africa_nodes.push(d);
+      pie(africa_nodes).map(function(d, i) {
+    
+        d.innerRadius = 0;
+        d.outerRadius = r;
+        
+        d.data.x = arc.centroid(d)[0]+500;
+        d.data.y = arc.centroid(d)[1]+100;
+
+        return d.data;
+      })
+    } else if (d.continent == "Americas") {
+      americas_nodes.push(d);
+      pie(americas_nodes).map(function(d, i) {
+    
+        d.innerRadius = 0;
+        d.outerRadius = r;
+        
+        d.data.x = arc.centroid(d)[0]+400;
+        d.data.y = arc.centroid(d)[1]+400;
+
+        return d.data;
+      })      
+    } else if (d.continent == "Asia") {
+      asia_nodes.push(d);
+      pie(asia_nodes).map(function(d, i) {
+    
+        d.innerRadius = 0;
+        d.outerRadius = r;
+        
+        d.data.x = arc.centroid(d)[0]+600;
+        d.data.y = arc.centroid(d)[1]+300;
+
+        return d.data;
+      })            
+    } else if (d.continent == "Europe") {
+      europe_nodes.push(d);
+      pie(europe_nodes).map(function(d, i) {
+    
+        d.innerRadius = 0;
+        d.outerRadius = r;
+        
+        d.data.x = arc.centroid(d)[0]+200;
+        d.data.y = arc.centroid(d)[1]+300;
+
+        return d.data;
+      })            
+    } else if (d.continent == "Oceania") {
+      oceania_nodes.push(d);
+      pie(oceania_nodes).map(function(d, i) {
+    
+        d.innerRadius = 0;
+        d.outerRadius = r;
+        
+        d.data.x = arc.centroid(d)[0]+250;
+        d.data.y = arc.centroid(d)[1]+100;
+
+        return d.data;
+      })            
+    }
+  });
+
+  var node = svg.selectAll(".node")
+      .data(graph.nodes)
+
+  node.transition().duration(500)
+      .attr("transform", function(d) { 
+        return "translate("+d.x+","+d.y+")"; 
+      });
+
+}
+
 d3.select("input[value=\"force\"]").on("click", force_layout);
 d3.select("input[value=\"circular\"]").on("click", circular_layout);
 d3.select("input[value=\"continents-linear\"]").on("click", continents_linear_force);
 d3.select("input[value=\"continents-circular\"]").on("click", continents_circular_force);
+d3.select("input[value=\"circles-on-circles\"]").on("click", circles_on_circles);
 
   </script>
 </body>
