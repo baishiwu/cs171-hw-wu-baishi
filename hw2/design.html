@@ -10,14 +10,43 @@
       font-family: "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
       font-size: 10px;
     }
-    circle {
-      stroke: #fff;
-      stroke-width: 1;
+
+    .node:hover {
+      fill: #000
     }
+
+    .node--source,
+    .node--target {
+      font-weight: 700;
+    }
+
+    .node--source {
+      fill: #999;
+    }
+
+    .node--target {
+      fill: #999;
+    }
+
     .link {
       stroke: #999;
-      stroke-opacity: .6;
+      stroke-opacity: .5;
     }
+
+    .link--source,
+    .link--target {
+      stroke-opacity: 1;
+      stroke-width: 2px;
+    }
+
+    .link--source {
+      stroke: #4682b4;
+    }
+
+    .link--target {
+      stroke: #e74c3c;
+    }
+
   </style>
 </head>
 <body>
@@ -106,12 +135,17 @@
     force.on("tick", function(e) {
 
       graph.nodes.forEach(function(d, i) {
-        d.x = (d.longitude) * 2 + 300;
-        d.y = - (d.latitude) * 3 + 200;
+        d.x = (d.longitude) * 2.25 + 300;
+        d.y = - (d.latitude) * 4 + 250;
 
       node
-          .attr("cx", function(d) { return d.x; })
-          .attr("cy", function(d) { return d.y; });
+        .attr("cx", function(d) { return d.x; })
+        .attr("cy", function(d) { return d.y; });
+
+      node
+        .on("mouseover", mouseovered)
+        .on("mouseout", mouseouted);
+
 
       link
         .attr("x1", function(d) { return d.source.x; })
@@ -127,6 +161,41 @@
 
     });
   });
+
+
+function mouseovered(d) {
+
+  var link = svg.selectAll(".link")
+      .data(graph.links)
+
+  link
+      .classed("link--target", function(l) { if (l.target === d) return l.source.source = true; })
+      .classed("link--source", function(l) { if (l.source === d) return l.target.target = true; })      
+
+  var node = svg.selectAll(".node")
+      .data(graph.nodes)
+
+  node
+      .classed("node--source", true);
+}
+
+function mouseouted() {
+
+  var link = svg.selectAll(".link")
+      .data(graph.links)
+
+  link
+      .classed("link--target", false)
+      .classed("link--source", false);
+
+  var node = svg.selectAll(".node")
+      .data(graph.nodes)
+
+  node
+      .classed("node--target", false)
+      .classed("node--source", false);
+}
+
   </script>
 </body>
 </html>
