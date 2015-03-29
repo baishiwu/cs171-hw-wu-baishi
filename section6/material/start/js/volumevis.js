@@ -9,7 +9,7 @@
 /**
  * @param _parentElement -- the HTML or SVG element (D3 node) to which to attach the vis
  * @param _data -- the data array
- * @constructor
+ * @constructor -- the type of object of VolumeVis, created in index.html (not really a function)
  */
 VolumeVis = function(_parentElement, _data){
     this.parentElement = _parentElement;
@@ -26,7 +26,7 @@ VolumeVis = function(_parentElement, _data){
 
 
 /**
- * Method that sets up the SVG and the variables
+ * Method that sets up the SVG and the variables or VolumeVis
  */
 VolumeVis.prototype.initVis = function(){
 

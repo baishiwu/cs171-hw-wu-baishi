@@ -87,6 +87,11 @@ var initVis = function(){
   volume_vis = new VolumeVis(d3.select("#volumeVis"), allData, MyEventHandler);
   type_vis = new TypeVis(d3.select("#typeVis"), allData, MyEventHandler);
 
+  // jQuery binding, where MyEventHandler saves the new object
+  $(MyEventHandler).bind("selectionChanged", function(event, type){
+    volume_vis.onSelectionChange(type);
+  });
+
 }
 
 var startHere = function() {

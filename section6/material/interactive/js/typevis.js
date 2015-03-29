@@ -30,6 +30,9 @@ TypeVis = function(_parentElement, _data, _eventHandler){
 /**
  * Method that sets up the SVG and the variables
  */
+
+// Prototype indicates that initVis is a function that belongs to the object "TypeVis"
+
 TypeVis.prototype.initVis = function(){
 
     // constructs SVG layout
@@ -45,6 +48,8 @@ TypeVis.prototype.initVis = function(){
 
     this.y = d3.scale.ordinal()
       .rangeRoundBands([0, this.height], .1);
+
+    this.color = d3.scale.category20();
 
     this.xAxis = d3.svg.axis()
       .scale(this.x)
@@ -100,6 +105,7 @@ TypeVis.prototype.updateVis = function(){
     // updates scales
     this.x.domain(d3.extent(this.displayData, function(d) { return d.count; }));
     this.y.domain(this.displayData.map(function(d) { return d.type; }));
+    this.color.domain(this.displayData.map(function(d) { return d.type }));
 
     // updates axis
     this.svg.select(".x.axis")
@@ -113,6 +119,10 @@ TypeVis.prototype.updateVis = function(){
 
     // Append new bar groups, if required
     var bar_enter = bar.enter().append("g");
+
+    bar.on("click", function(d) {
+        $(that.eventHandler).trigger("selectionChanged", d.type);
+    })
 
     // Append a rect and a text only for the Enter set (new g)
     bar_enter.append("rect");
@@ -137,7 +147,13 @@ TypeVis.prototype.updateVis = function(){
       .transition()
       .attr("width", function(d, i) {
           return that.x(d.count);
+      })
+      .attr("y", 0)
+      .style("fill", function(d,i) {
+        return that.color(d.type);
       });
+
+    // This "that" is necessary because it is within another function, and now out of scope
 
     bar.selectAll("text")
       .transition()
