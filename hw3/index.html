@@ -8,7 +8,7 @@
     <script src="libs/d3/d3.min.js" charset="utf-8"></script>
     <script src="libs/jquery/jquery-2.1.1.min.js" charset="utf-8"></script>
     <script src="libs/bootstrap/js/bootstrap.min.js" charset="utf-8"></script>
-
+    <script src="http://d3js.org/queue.v1.min.js"></script>
 
     <!--Stylesheets-->
     <link rel="stylesheet" type="text/css" href="libs/bootstrap/css/bootstrap.min.css">
@@ -59,15 +59,9 @@
         <div class="row">
             <div class="col-md-9" id="countVis">
                 <!-- TODO: delete placeholder svg element -->
-                <svg width="650" height="330" style="background-color: lightblue">
-                    <text x="50" y="50">HERE should be CountVis</text>
-                </svg>
             </div>
             <div class="col-md-3" id="ageVis">
                 <!-- TODO: delete placeholder svg element -->
-                <svg width="230" height="330" style="background-color: lightcoral">
-                    <text x="50" y="50">HERE should be AgeVis</text>
-                </svg>
             </div>
         </div>
 
@@ -118,6 +112,14 @@
 
                 //TODO: Instantiate all Vis Objects here
 
+                var count_vis = new CountVis(d3.select("#countVis"), allData, MyEventHandler);
+                var age_vis = new AgeVis(d3.select("#ageVis"), allData, MyEventHandler);
+
+                $(MyEventHandler).bind("selectionChanged", function(event, type){
+                    age_vis.onSelectionChange(type);
+                });
+
+
 
                 // TODO: bind the eventHandler to the Vis Objects
                 // events will be created from the CountVis object (nothing to do here)
@@ -141,7 +143,6 @@
                     *
                     * */
 
-
                     allData = _allData.map(function (d) {
                                 var res = {
                                     time: dateFormatter.parse(d.day),
@@ -149,7 +150,8 @@
                                 };
 
                                 // TODO: implement that  !!
-                                res.prios = []
+                                res.prios = [d["sum(p0)"], d["sum(p1)"], d["sum(p2)"], d["sum(p3)"], d["sum(p4)"], d["sum(p5)"], d["sum(p6)"], d["sum(p7)"], d["sum(p8)"], d["sum(p9)"], d["sum(p10)"], d["sum(p11)"], d["sum(p12)"], d["sum(p13)"], d["sum(p14)"], d["sum(p15)"]]
+
                                 // should be an array of 16 numbers with the total count MAPping the prio values,
                                 //  [d["sum(p0)"], d["sum(p1)"], d["sum(p2)"],...]
                                 // Example:
@@ -158,7 +160,15 @@
 
                                 // This is ONE way to create an array of length 100
                                 // and set every value to "0")
-                                res.ages = d3.range(0,100). map(function(){return 0;})
+                                res.ages = d3.range(0,100).map(function(e, i) {
+                                    for (e = 0; e < 100; e++ ) {
+                                        if (i == d.age[e]["age"]) { 
+                                            return d.age[e]["count(*)"]
+                                        } else { 
+                                            return 0 
+                                        };
+                                    };
+                                })
 
                                 // TODO: Assign the count for each age to the index position
                                 // eg: res.ages[22] should contain the count value for age 22
@@ -171,6 +181,8 @@
                             }
                     )
 
+                    console.log(allData);
+
                     metaData = _metaData;
                     initVis();
                 }
@@ -180,6 +192,11 @@
 
                 //TODO: load data here and call "dataLoaded" afterwards
                 // Hint: http://giscollective.org/d3-queue-js/
+
+                queue()
+                    .defer(d3.json, "data/perDayData.json")    
+                    .defer(d3.json, "data/MYWorld_Fields.json")
+                    .await(dataLoaded);
 
                 // bind reset zoom button to a function (-- ONLY FOR BONUS --)
                 d3.select("#fitInBtn").on("click", function() {
