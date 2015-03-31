@@ -74,7 +74,7 @@ AgeVis.prototype.initVis = function(){
       .interpolate("monotone")
       .x(function(d) { return that.x(d.time); })
       .y0(this.height)
-      .y1(function(d) { return that.y(d.count); });
+      .y1(function(d) { return that.y(d.ages); });
 
     this.svg.append("g")
         .attr("class", "x axis")
@@ -108,7 +108,6 @@ AgeVis.prototype.wrangleData= function(_filterFunction){
     //// if you don't pass options -- set the default options
     //// the default is: var options = {filter: function(){return true;} }
     //var options = _options || {filter: function(){return true;}};
-    console.log(this.displayData);
 
 
 
@@ -169,7 +168,7 @@ AgeVis.prototype.updateVis = function(){
 AgeVis.prototype.onSelectionChange= function (selectionStart, selectionEnd){
 
     // TODO: call wrangle function
-
+    this.wrangleData();
     this.updateVis();
 
 
@@ -210,23 +209,21 @@ AgeVis.prototype.filterAndAggregate = function(_filter){
         return 0;
     });
 
-
     // accumulate all values that fulfill the filter criterion
 
     // TODO: implement the function that filters the data and sums the values
 
-    var aggregateCountsForRange = function(from, to){
+    countRange = this.data.filter(function (d) { 
+        // return d.time >= selectionStart & d.time <= selectionEnd 
+        return d.time
+    });
 
-        var res = 0;
+    // Need to sum up arrays here: 
+    // countRange = allData.filter(function (d) { return d.time >= from & d.time <= to });
+    // count = d3.sum(countRange, function(d) { return d.count })
 
-        countRange = allData.filter(function (d) { return d.time >= from & d.time <= to });
-        res = d3.sum(countRange, function(d) { return d.count })
-    }
+    res = countRange[20].ages;
 
     return res;
 
 }
-
-
-
-
