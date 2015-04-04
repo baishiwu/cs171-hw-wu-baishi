@@ -112,13 +112,12 @@
 
                 //TODO: Instantiate all Vis Objects here
 
-                var count_vis = new CountVis(d3.select("#countVis"), allData, MyEventHandler);
-                var age_vis = new AgeVis(d3.select("#ageVis"), allData, MyEventHandler);
+                var count_vis = new CountVis(d3.select("#countVis"), allData, metaData, MyEventHandler);
+                var age_vis = new AgeVis(d3.select("#ageVis"), allData, metaData, MyEventHandler);
 
-                $(MyEventHandler).bind("selectionChanged", function(event, type){
-                    age_vis.onSelectionChange(type);
+                $(MyEventHandler).bind("selectionChanged", function(event, selectionStart, selectionEnd){
+                    age_vis.onSelectionChange(selectionStart, selectionEnd);
                 });
-
 
                 // TODO: bind the eventHandler to the Vis Objects
                 // events will be created from the CountVis object (nothing to do here)

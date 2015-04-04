@@ -55,7 +55,7 @@ AgeVis.prototype.initVis = function(){
 
 
     //TODO: create axis and scales
-    this.x = d3.scale.linear()
+    this.x = d3.time.scale()
       .range([0, this.width]);
 
     this.y = d3.scale.linear()
@@ -63,7 +63,6 @@ AgeVis.prototype.initVis = function(){
 
     this.xAxis = d3.svg.axis()
       .scale(this.x)
-      .ticks(6)
       .orient("bottom");
 
     this.yAxis = d3.svg.axis()
@@ -131,12 +130,10 @@ AgeVis.prototype.updateVis = function(){
     // TODO: ...update scales
     // TODO: ...update graphs
 
-    this.x.domain(d3.extent(this.displayData, function(d) { return d.time; }));
-    this.y.domain(d3.extent(this.displayData, function(d) { return d.count; }));
+    this.x.domain(d3.extent(this.displayData, function(d) { return d; }));
+    this.y.domain(d3.extent(this.displayData, function(d) { return d }));
 
     // updates axis
-    this.svg.select(".x.axis")
-        .call(this.xAxis);
 
     this.svg.select(".y.axis")
         .call(this.yAxis)
@@ -212,6 +209,8 @@ AgeVis.prototype.filterAndAggregate = function(_filter){
     // accumulate all values that fulfill the filter criterion
 
     // TODO: implement the function that filters the data and sums the values
+
+    // var filter_function = function (d){ //return true if d is within selectionStart and selectionEnd, false otherwise}
 
     countRange = this.data.filter(function (d) { 
         // return d.time >= selectionStart & d.time <= selectionEnd 

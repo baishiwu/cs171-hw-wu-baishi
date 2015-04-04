@@ -84,7 +84,7 @@ CountVis.prototype.initVis = function(){
 
     this.brush = d3.svg.brush()
       .on("brush", function(){
-        console.log(that.brush.extent());
+        $(that.eventHandler).trigger("selectionChanged", that.brush.extent());
       });
 
     this.svg.append("g")
@@ -104,7 +104,6 @@ CountVis.prototype.initVis = function(){
 
     //TODO: implement the slider -- see example at http://bl.ocks.org/mbostock/6452972
     this.addSlider(this.svg)
-
 
     // filter, aggregate, modify data
     this.wrangleData();
