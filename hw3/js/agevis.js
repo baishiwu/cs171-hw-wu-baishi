@@ -37,6 +37,7 @@ AgeVis = function(_parentElement, _data, _metaData){
 
 }
 
+var filtered_data = [];
 
 /**
  * Method that sets up the SVG and the variables
@@ -71,9 +72,9 @@ AgeVis.prototype.initVis = function(){
 
     this.area = d3.svg.area()
       .interpolate("monotone")
-      .x(function(d) { return that.x(d.time); })
+      .x(function(d) { return that.x(d); })
       .y0(this.height)
-      .y1(function(d) { return that.y(d.ages); });
+      .y1(function(d, i) { return that.y(i); });
 
     this.svg.append("g")
         .attr("class", "x axis")
@@ -88,7 +89,7 @@ AgeVis.prototype.initVis = function(){
         .style("text-anchor", "end")
 
     // filter, aggregate, modify data
-    this.wrangleData(null);
+    this.wrangleData();
 
     // call the update method
     this.updateVis();
@@ -105,12 +106,8 @@ AgeVis.prototype.wrangleData= function(_filterFunction){
     this.displayData = this.filterAndAggregate(_filterFunction);
     //// you might be able to pass some options,
     //// if you don't pass options -- set the default options
-    //// the default is: var options = {filter: function(){return true;} }
+    var options = {filter: function(){return true;} }
     //var options = _options || {filter: function(){return true;}};
-
-
-
-
 }
 
 
@@ -131,7 +128,7 @@ AgeVis.prototype.updateVis = function(){
     // TODO: ...update graphs
 
     this.x.domain(d3.extent(this.displayData, function(d) { return d; }));
-    this.y.domain(d3.extent(this.displayData, function(d) { return d }));
+    this.y.domain(d3.extent(this.displayData, function(d, i) { return i; }));
 
     // updates axis
 
@@ -155,7 +152,6 @@ AgeVis.prototype.updateVis = function(){
 
 }
 
-
 /**
  * Gets called by event handler and should create new aggregated data
  * aggregation is done by the function "aggregate(filter)". Filter has to
@@ -164,13 +160,18 @@ AgeVis.prototype.updateVis = function(){
  */
 AgeVis.prototype.onSelectionChange= function (selectionStart, selectionEnd){
 
-    // TODO: call wrangle function
+    var filter = function(d){
+        if ((d.time > selectionStart) && (d.time < selectionEnd)){
+            return true;
+        }
+    }    
+
+    filtered_data = this.data.filter(filter);
+
     this.wrangleData();
     this.updateVis();
 
-
 }
-
 
 /*
 *
@@ -196,33 +197,26 @@ AgeVis.prototype.filterAndAggregate = function(_filter){
     if (_filter != null){
         filter = _filter;
     }
+
     //Dear JS hipster, a more hip variant of this construct would be:
     // var filter = _filter || function(){return true;}
-
     var that = this;
 
     // create an array of values for age 0-100
     var res = d3.range(100).map(function () {
         return 0;
     });
-
     // accumulate all values that fulfill the filter criterion
+
+    filtered_data.map(function (d) {
+        res_ = d.ages;
+        for (i= 0; i < res_.length; i++){
+            res[i] = res[i] + res_[i];
+                }
+            return d.time.toDateString();
+            })    
 
     // TODO: implement the function that filters the data and sums the values
 
-    // var filter_function = function (d){ //return true if d is within selectionStart and selectionEnd, false otherwise}
-
-    countRange = this.data.filter(function (d) { 
-        // return d.time >= selectionStart & d.time <= selectionEnd 
-        return d.time
-    });
-
-    // Need to sum up arrays here: 
-    // countRange = allData.filter(function (d) { return d.time >= from & d.time <= to });
-    // count = d3.sum(countRange, function(d) { return d.count })
-
-    res = countRange[20].ages;
-
     return res;
-
 }
